@@ -1,4 +1,4 @@
-package TDAGrafo;
+package TDAGrafoDirigido;
 
 import java.util.Iterator;
 
@@ -6,30 +6,32 @@ import Excepciones.EmptyListException;
 import Excepciones.InvalidEdgeException;
 import Excepciones.InvalidPositionException;
 import Excepciones.InvalidVertexException;
+import TDAGrafo.Edge;
+import TDAGrafo.Vertex;
 import TDALista.ListaDoblementeEnlazada;
 import TDALista.Position;
 import TDALista.PositionList;
 
-public class Grafo<V,E> implements Graph<V,E> {
+public class GrafoDirigido<V,E> implements GraphD<V,E> {
 	
-	protected PositionList<Vertice<V,E>> nodos;
-	protected PositionList<Arco<V,E>> arcos;
+	protected PositionList<VerticeDirigido<V,E>> nodos;
+	protected PositionList<ArcoDirigido<V,E>> arcos;
 	
 	/**
-	 * Constructor que crea un objeto de tipo grafo
+	 * Constructor que crea un objeto de tipo grafo dirigido
 	 */
-	public Grafo() {
-		nodos = new ListaDoblementeEnlazada<Vertice<V,E>>();
-		arcos = new ListaDoblementeEnlazada<Arco<V,E>>();
+	public GrafoDirigido() { //Orden(1)
+		nodos = new ListaDoblementeEnlazada<VerticeDirigido<V,E>>();
+		arcos = new ListaDoblementeEnlazada<ArcoDirigido<V,E>>();
 	}
 	
 	/**
 	 * Devuelve una colección iterable de vértices.
 	 * @return Una colección iterable de vértices.
 	 */
-	public Iterable<Vertex<V>> vertices() {
+	public Iterable<Vertex<V>> vertices() { //Orden(n)
 		PositionList<Vertex<V>> list = new ListaDoblementeEnlazada<Vertex<V>>();
-		for(Vertice<V,E> v : this.nodos) {
+		for(VerticeDirigido<V,E> v : this.nodos) {
 			list.addLast(v);
 		}
 		return list;
@@ -39,9 +41,9 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 * Devuelve una colección iterable de arcos.
 	 * @return Una colección iterable de arcos.
 	 */
-	public Iterable<Edge<E>> edges() {
+	public Iterable<Edge<E>> edges() { //Orden(m)
 		PositionList<Edge<E>> list = new ListaDoblementeEnlazada<Edge<E>>();
-		for(Arco<V,E> a: this.arcos) {
+		for(ArcoDirigido<V,E> a: this.arcos) {
 			list.addLast(a);
 		}
 		return list;
@@ -53,14 +55,31 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 * @return Una colección iterable de arcos incidentes a un vértice v.
 	 * @throws InvalidVertexException si el vértice es inválido.
 	 */
-	public Iterable<Edge<E>> incidentEdges(Vertex<V> v) throws InvalidVertexException {
-		Vertice<V,E> vertice = this.checkVertex(v);
+	public Iterable<Edge<E>> incidentEdges(Vertex<V> v) throws InvalidVertexException { //Orden(i)
+		VerticeDirigido<V,E> vertice = this.checkVertex(v);
 		
 		PositionList<Edge<E>> list = new ListaDoblementeEnlazada<Edge<E>>();
 	
-		for(Arco<V,E> a : vertice.getAdyacentes() ) {
+		for(ArcoDirigido<V,E> a : vertice.getIncidentes() ) {
 			list.addLast(a);
-			
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * Devuelve una colección iterable de arcos adyacentes a un vértice v.
+	 * @param v Un vértice
+	 * @return Una colección iterable de arcos adyacentes a un vértice v.
+	 * @throws InvalidVertexException si el vértice es inválido.
+	 */
+	public Iterable<Edge<E>> succesorEdges(Vertex<V> v) throws InvalidVertexException {
+		VerticeDirigido<V,E> vertice = this.checkVertex(v);
+		
+		PositionList<Edge<E>> list = new ListaDoblementeEnlazada<Edge<E>>();
+		
+		for(ArcoDirigido<V,E> a : vertice.getEmergentes()) {
+			list.addLast(a);
 		}
 		
 		return list;
@@ -75,8 +94,8 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 * @throws InvalidEdgeException si el arco es inválido.
 	 */
 	public Vertex<V> opposite(Vertex<V> v, Edge<E> e) throws InvalidVertexException, InvalidEdgeException {
-		Vertice<V,E> vertice = this.checkVertex(v);
-		Arco<V,E> arco = this.checkEdge(e);
+		VerticeDirigido<V,E> vertice = this.checkVertex(v);
+		ArcoDirigido<V,E> arco = this.checkEdge(e);
 		
 		Vertex<V> verticeARetornar = null;
 		
@@ -99,9 +118,9 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 */
 	public Vertex<V> [] endvertices(Edge<E> e) throws InvalidEdgeException {
 		@SuppressWarnings("unchecked")
-		Vertex<V> [] extremosDelArco = (Vertice<V,E>[]) new Vertice [2];
+		Vertex<V> [] extremosDelArco = (VerticeDirigido<V,E>[]) new VerticeDirigido [2];
 		
-		Arco<V,E> arco = this.checkEdge(e);
+		ArcoDirigido<V,E> arco = this.checkEdge(e);
 		
 		extremosDelArco[0] = arco.getPred();
 		extremosDelArco[1] = arco.getSuces();
@@ -119,13 +138,13 @@ public class Grafo<V,E> implements Graph<V,E> {
 	public boolean areAdjacent(Vertex<V> v, Vertex<V> w) throws InvalidVertexException {
 		boolean sonAdyacentes = false;
 		
-		Vertice<V,E> vertice1 = this.checkVertex(v);
-		Vertice<V,E> vertice2 = this.checkVertex(w);
+		VerticeDirigido<V,E> vertice1 = this.checkVertex(v);
+		VerticeDirigido<V,E> vertice2 = this.checkVertex(w);
 		
-		Iterator<Arco<V,E>> it = this.arcos.iterator();
+		Iterator<ArcoDirigido<V,E>> it = this.arcos.iterator();
 		
 		while(it.hasNext() && !sonAdyacentes) {
-			Arco<V,E> arcoAExaminar = it.next();
+			ArcoDirigido<V,E> arcoAExaminar = it.next();
 			
 			if(arcoAExaminar.getPred().equals(vertice1) && arcoAExaminar.getSuces().equals(vertice2)) {
 				sonAdyacentes = true;
@@ -146,12 +165,12 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 * @throws InvalidVertexException si el vértice es inválido.
 	 */
 	public V replace(Vertex<V> v, V x) throws InvalidVertexException {
-		Vertice<V,E> vertice = this.checkVertex(v);
+		VerticeDirigido<V,E> vertice = this.checkVertex(v);
 		V rotulo = null;
 		boolean seEncontro = false;
 		
-		Iterator<Vertice<V,E>> it = this.nodos.iterator();
-		Vertice<V,E> verticeAExaminar = null;
+		Iterator<VerticeDirigido<V,E>> it = this.nodos.iterator();
+		VerticeDirigido<V,E> verticeAExaminar = null;
 		
 		while( it.hasNext() && !seEncontro ) {
 			verticeAExaminar = it.next();
@@ -165,7 +184,7 @@ public class Grafo<V,E> implements Graph<V,E> {
 		if(!seEncontro) {
 			throw new InvalidVertexException("Vértice invalido");
 		} else {
-			Vertice<V,E> verticeEncontrado = verticeAExaminar;
+			VerticeDirigido<V,E> verticeEncontrado = verticeAExaminar;
 			//Guardo el rotulo del vertice encontrado
 			rotulo = verticeEncontrado.element();
 			//Lo reemplazo por el pasado por parametro
@@ -181,37 +200,37 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 * @return Un nuevo vértice insertado.
 	 */
 	public Vertex<V> insertVertex(V x) {
-		Vertice<V,E> v = new Vertice<V,E>(x);
+		VerticeDirigido<V,E> v = new VerticeDirigido<V,E>(x);
 		this.nodos.addLast(v);
 		try {
-			v.setPosicionEnNodos(this.nodos.last());
+			v.setPosicionEnListaVertices(this.nodos.last());
 		} catch (EmptyListException e) {System.out.println("Algo raro paso");}
 		
 		return v;
 	}
 	
 	/**
-	 * Inserta un nuevo arco con rótulo e, con vértices extremos v y w.
+	 * Inserta un nuevo arco con rótulo e, desde un vértice v a un vértice w.
 	 * @param v Un vértice
 	 * @param w Un vértice
 	 * @param e rótulo del nuevo arco.
-	 * @return Un nuevo arco.
+	 * @return Un nuevo arco insertado desde un vértice V a un vértice W.
 	 * @throws InvalidVertexException si uno de los vértices es inválido.
 	 */
 	public Edge<E> insertEdge(Vertex<V> v, Vertex<V> w, E e) throws InvalidVertexException {
-		Vertice<V,E> verticeV = this.checkVertex(v);
-		Vertice<V,E> verticeW = this.checkVertex(w);
+		VerticeDirigido<V,E> verticeV = this.checkVertex(v);
+		VerticeDirigido<V,E> verticeW = this.checkVertex(w);
 		
-		Arco<V,E> nuevoArco = new Arco<V,E>( e, verticeV, verticeW);
+		ArcoDirigido<V,E> nuevoArco = new ArcoDirigido<V,E>( e, verticeV, verticeW);
 		
 		try {
-			verticeV.getAdyacentes().addLast(nuevoArco);
-			nuevoArco.setPosicionEnlv1( verticeV.getAdyacentes().last() );
+			verticeV.getEmergentes().addLast(nuevoArco);
+			nuevoArco.setPosicionEnEmergentes( verticeV.getEmergentes().last() );
 		} catch (EmptyListException e1) {System.out.println("Algo raro paso");}
 		
 		try {
-			verticeW.getAdyacentes().addLast(nuevoArco);
-			nuevoArco.setPosicionEnlv2( verticeW.getAdyacentes().last());
+			verticeW.getIncidentes().addLast(nuevoArco);
+			nuevoArco.setPosicionEnIncidentes( verticeW.getIncidentes().last());
 		} catch (EmptyListException e2) {System.out.println("Algo raro paso");}
 		
 		
@@ -230,29 +249,38 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 * @throws InvalidVertexException si el vértice es inválido.
 	 */
 	public V removeVertex(Vertex<V> v) throws InvalidVertexException {
-		Vertice<V,E> vertice = this.checkVertex(v);
-		Position<Vertice<V,E>> pos = vertice.getPosicionEnNodos();
+		VerticeDirigido<V,E> vertice = this.checkVertex(v);
+		Position<VerticeDirigido<V,E>> pos = vertice.getPosicionEnListaVertices();
 		V rotulo = null;
 		try {
-			for( Arco<V,E> arco: vertice.getAdyacentes()) {
-				this.arcos.remove(arco.getPosicionEnArcos());
-				
-				Vertice<V, E> verticePred = this.checkVertex(arco.getPred());
-				Vertice<V, E> verticeSuces = this.checkVertex(arco.getSuces());
-				
-				verticePred.getAdyacentes().remove(arco.getPosicionEnlv1());
-				verticeSuces.getAdyacentes().remove(arco.getPosicionEnlv2());
-				
-				arco.setElement(null);
-				arco.setPosicionEnArcos(null);
-				arco.setPosicionEnlv1(null);
-				arco.setPosicionEnlv2(null);
-				
+			//Para cada arco que incide en el vertice, removerlo.
+			for( ArcoDirigido<V,E> arco: vertice.getIncidentes()) {
+				this.arcos.remove(arco.getPosicionEnArcos()); //Remuevo al arco de la lista de arcos
+				//Obtengo la posicion de los vertices de los extremos del arco
+				VerticeDirigido<V, E> verticePred = this.checkVertex(arco.getPred());
+				VerticeDirigido<V, E> verticeSuces = this.checkVertex(arco.getSuces());
+				//De las posiciones de los vertices, remover al arco de emergentes o incidetes segun corresponda
+				verticePred.getEmergentes().remove(arco.getPosicionEnEmergentes());
+				verticeSuces.getIncidentes().remove(arco.getPosicionEnIncidentes());
+				//Dejo en referencia nula a todos los parametros del arco
+				this.limpiarParametrosDeUnArco(arco);
 			}
-			
+			//Para cada arco de emerge en el vertice, removerlo.
+			for( ArcoDirigido<V,E> arco: vertice.getEmergentes()) {
+				this.arcos.remove(arco.getPosicionEnArcos()); //Remuevo al arco de la lista de arcos
+				//Obtengo la posicion de los vertices de los extremos del arco
+				VerticeDirigido<V,E> verticePred = this.checkVertex(arco.getPred());
+				VerticeDirigido<V,E> verticeSuces = this.checkVertex(arco.getSuces());
+				//De las posiciones de los vertices, remover al arco de emergentes o incidetes segun corresponda
+				verticePred.getEmergentes().remove(arco.getPosicionEnEmergentes());
+				verticeSuces.getIncidentes().remove(arco.getPosicionEnIncidentes());
+				//Dejo en referencia nula a todos los parametros del arco
+				this.limpiarParametrosDeUnArco(arco);
+			}
+			//Elimino de nodos al vertice que se quiere eliminar y guardo el rotulo del vertice
 			rotulo = this.nodos.remove(pos).element();
 		} catch (InvalidPositionException e) {System.out.println("Algo raro");}
-		
+		//Retorno el rotulo del vertice eliminado
 		return rotulo;
 	}
 	
@@ -264,23 +292,25 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 */
 	@SuppressWarnings("unchecked")
 	public E removeEdge(Edge<E> e) throws InvalidEdgeException {
-		Arco<V,E> arco = this.checkEdge(e);
-		
-		Vertice<V,E> vertPred = (Vertice<V,E>) arco.getPred();
-		Vertice<V,E> vertSuces = (Vertice<V,E>) arco.getSuces();
-		
-		Position<Arco<V,E>> pos = arco.getPosicionEnArcos();
+		ArcoDirigido<V,E> arco = this.checkEdge(e);
+		//Obtengo la posicion de los vertices extremos del arco a remover
+		VerticeDirigido<V,E> vertPred = (VerticeDirigido<V,E>) arco.getPred();
+		VerticeDirigido<V,E> vertSuces = (VerticeDirigido<V,E>) arco.getSuces();
+		//Obtengo la posicion del arco en la lista de arcos
+		Position<ArcoDirigido<V,E>> pos = arco.getPosicionEnArcos();
 		
 		E rotulo = null;
 		try {
-			//Elimino al arco de la lista de adyacentes de vertPred
-			vertPred.getAdyacentes().remove(arco.getPosicionEnlv1());
-			//Elimino al arco de la lista de adyacentes de vertSuces
-			vertSuces.getAdyacentes().remove(arco.getPosicionEnlv2());
+			//Elimino al arco de la lista de emergentes de vertPred
+			vertPred.getEmergentes().remove(arco.getPosicionEnEmergentes());
+			//Elimino al arco de la lista de incidentes de vertSuces
+			vertSuces.getIncidentes().remove(arco.getPosicionEnIncidentes());
 			//Remuevo al arco de la lista de arcos y retorno el rotulo
 			rotulo = this.arcos.remove(pos).element();
+			//Dejo en referencia nula a todos los parametros del arco
+			this.limpiarParametrosDeUnArco(arco);
 		} catch (InvalidPositionException e1) {System.out.println("Algo raro paso");}
-		
+		//Retorno el rotulo del vertice eliminado
 		return rotulo;
 	}
 	
@@ -291,13 +321,13 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 * @throws InvalidVertexException si el vertice es invalido.
 	 */
 	@SuppressWarnings("unchecked")
-	private Vertice<V,E> checkVertex(Vertex<V> v) throws InvalidVertexException {
+	private VerticeDirigido<V,E> checkVertex(Vertex<V> v) throws InvalidVertexException {
 		if( v == null) {
 			throw new InvalidVertexException("Vertice invalido");
 		} else {
-			Vertice<V,E> nodo = null;
+			VerticeDirigido<V,E> nodo = null;
 			try {
-				nodo = (Vertice<V,E>) v;
+				nodo = (VerticeDirigido<V,E>) v;
 			} catch (ClassCastException e) {
 				throw new InvalidVertexException("Vertice invalido");
 			}
@@ -312,17 +342,30 @@ public class Grafo<V,E> implements Graph<V,E> {
 	 * @throws InvalidVertexException si el arco es invalido.
 	 */
 	@SuppressWarnings("unchecked")
-	private Arco<V,E> checkEdge(Edge<E> e) throws InvalidEdgeException {
+	private ArcoDirigido<V,E> checkEdge(Edge<E> e) throws InvalidEdgeException {
 		if( e == null) {
 			throw new InvalidEdgeException("Arco invalido");
 		} else {
-			Arco<V,E> nodo = null;
+			ArcoDirigido<V,E> nodo = null;
 			try {
-				nodo = (Arco<V,E>) e;
+				nodo = (ArcoDirigido<V,E>) e;
 			} catch (ClassCastException error) {
 				throw new InvalidEdgeException("Arco invalido");
 			}
 			return nodo;
 		}
+	}
+	
+	/**
+	 * Establece a null a todos los parametros de un arco.
+	 * @param arco Arco al que se modificara.
+	 */
+	private void limpiarParametrosDeUnArco(ArcoDirigido<V,E> arco) {
+		arco.setPosicionEnArcos(null);
+		arco.setPosicionEnEmergentes(null);
+		arco.setPosicionEnIncidentes(null);
+		arco.setPred(null);
+		arco.setSuces(null);
+		arco.setRotulo(null);
 	}
 }
