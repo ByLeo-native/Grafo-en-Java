@@ -88,7 +88,7 @@ public class GrafoConMatriz<V,E> implements Graph<V,E> {
 	public V replace(Vertex<V> v, V x) throws InvalidVertexException {
 		VerticeConMatriz<V> vertice = this.checkVertice(v);
 		V rotulo = vertice.element();
-		vertice.setRotulo(rotulo);
+		vertice.setRotulo(x);
 		return rotulo;
 	}
 	

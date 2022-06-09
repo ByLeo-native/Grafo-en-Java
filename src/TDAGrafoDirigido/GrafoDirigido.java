@@ -59,9 +59,9 @@ public class GrafoDirigido<V,E> implements GraphD<V,E> {
 		VerticeDirigido<V,E> vertice = this.checkVertex(v);
 		
 		PositionList<Edge<E>> list = new ListaDoblementeEnlazada<Edge<E>>();
-	
-		for(ArcoDirigido<V,E> a : vertice.getIncidentes() ) {
-			list.addLast(a);
+		
+		for(ArcoDirigido<V,E> a : vertice.getIncidentes() ) { //	Para todos los arcos que inciden al vertice
+			list.addLast(a); // Añado al arco a la lista de arcos incidentes al vertice pasado por parametro
 		}
 		
 		return list;

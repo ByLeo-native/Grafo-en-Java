@@ -8,6 +8,8 @@ import org.junit.Test;
 
 import Excepciones.InvalidEdgeException;
 import Excepciones.InvalidVertexException;
+import TDAGrafoConMatriz.GrafoConMatriz;
+import TDAGrafoDirigido.GrafoDirigido;
 
 // Estructura a testear
 import java.util.Iterator;
@@ -38,6 +40,7 @@ public class GraphTests {
 	 */
 	@Before
 	public void setUp() {
+		//cambiar a GrafoConMatriz<Object, Object>(105) para testearlo
 		graph = new Grafo<Object, Object>(); // cambiar esta línea para probar
 												// distintas implementaciones
 		o1 = new Object();

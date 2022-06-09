@@ -60,7 +60,6 @@ public class Grafo<V,E> implements Graph<V,E> {
 	
 		for(Arco<V,E> a : vertice.getAdyacentes() ) {
 			list.addLast(a);
-			
 		}
 		
 		return list;
